@@ -84,62 +84,78 @@ class ViewController: UIViewController {
 
 private extension ViewController {
     //MARK:- Animations
-
+    
     func fade(to image: UIImage, showEffects: Bool) {
-          //TODO: Create a crossfade animation for the background
-
-      //TODO: Create a fade animation for snowView
+        // Create & setup temp view
+        let tempView = UIImageView(frame: backgroundView.frame)
+        tempView.image = image
+        tempView.alpha = 0
+        tempView.center.y += 20
+        tempView.bounds.size.width = backgroundView.bounds.size.width * 1.3
+        backgroundView.superview?.insertSubview(tempView, aboveSubview: backgroundView)
+        
+        UIView.animate(withDuration: 0.5) {
+            // Fade temp view in
+            tempView.alpha = 1
+            tempView.center.y -= 20
+            tempView.bounds.size = self.backgroundView.bounds.size
+            self.snowView.isHidden = !showEffects
+        } completion: { _ in
+            // Update background image & remove tempView
+            self.backgroundView.image = image
+            tempView.removeFromSuperview()
+        }
     }
     
     func move(label: UILabel, text: String, offset: CGPoint) {
-      //TODO: Animate a label's translation property
+        //TODO: Animate a label's translation property
     }
     
     func cubeTransition(label: UILabel, text: String) {
-          //TODO: Create a faux rotating cube animation
+        //TODO: Create a faux rotating cube animation
     }
     
     func depart() {
-          //TODO: Animate the plane taking off and landing
+        //TODO: Animate the plane taking off and landing
     }
     
     func changeSummary(to summaryText: String) {
-          //TODO: Animate the summary text
+        //TODO: Animate the summary text
     }
-
+    
     func changeFlight(to flight: Flight, animated: Bool = false) {
-          // populate the UI with the next flight's data
-      backgroundView.image = UIImage(named: flight.weatherImageName)
-      departureLabel.text = flight.origin
-      arriveLabel.text = flight.destination
-      flightsNumberLabel.text = flight.number
-      gateNumberLabel.text = flight.gateNumber
-      statusLabel.text = flight.status
-      summaryLabel.text = flight.summary
-
-      if animated {
-        // TODO: Call your animation
-      } else {
-
-      }
-      
-      // schedule next flight
-      delay(seconds: 3) {
-        self.changeFlight(
-          to: flight.isTakingOff ? .parisToRome : .londonToParis,
-          animated: true
-        )
-      }
+        // populate the UI with the next flight's data
+        departureLabel.text = flight.origin
+        arriveLabel.text = flight.destination
+        flightsNumberLabel.text = flight.number
+        gateNumberLabel.text = flight.gateNumber
+        statusLabel.text = flight.status
+        summaryLabel.text = flight.summary
+        
+        if animated {
+            // TODO: Call your animation
+            fade(to: UIImage(named: flight.weatherImageName)!, showEffects: flight.showWeatherEffects)
+        } else {
+            backgroundView.image = UIImage(named: flight.weatherImageName)
+        }
+        
+        // schedule next flight
+        delay(seconds: 3) {
+            self.changeFlight(
+                to: flight.isTakingOff ? .parisToRome : .londonToParis,
+                animated: true
+            )
+        }
     }
     
     //MARK:- utility methods
     func duplicate(_ label: UILabel) -> UILabel {
-      let newLabel = UILabel(frame: label.frame)
-      newLabel.font = label.font
-      newLabel.textAlignment = label.textAlignment
-      newLabel.textColor = label.textColor
-      newLabel.backgroundColor = label.backgroundColor
-      return newLabel
+        let newLabel = UILabel(frame: label.frame)
+        newLabel.font = label.font
+        newLabel.textAlignment = label.textAlignment
+        newLabel.textColor = label.textColor
+        newLabel.backgroundColor = label.backgroundColor
+        return newLabel
     }
 }
 
@@ -351,5 +367,5 @@ private extension ViewController {
 }
 
 private func delay(seconds: TimeInterval, execute: @escaping () -> Void) {
-  DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: execute)
+    DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: execute)
 }
