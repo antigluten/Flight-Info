@@ -99,16 +99,50 @@ private extension ViewController {
             tempView.alpha = 1
             tempView.center.y -= 20
             tempView.bounds.size = self.backgroundView.bounds.size
-            self.snowView.isHidden = !showEffects
         } completion: { _ in
             // Update background image & remove tempView
             self.backgroundView.image = image
             tempView.removeFromSuperview()
         }
+        
+        UIView.animate(
+            withDuration: 1, delay: 0,
+            options: .curveEaseOut) {
+                self.snowView.alpha = showEffects ? 1 : 0
+            }
     }
     
     func move(label: UILabel, text: String, offset: CGPoint) {
         //TODO: Animate a label's translation property
+        // Create and setup a temp label
+        let tempLabel = duplicate(label)
+        tempLabel.text = text
+        tempLabel.transform = .init(translationX: offset.x, y: offset.y)
+        tempLabel.alpha = 0
+        view.addSubview(tempLabel)
+        
+        // Fade out and translate real label
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0,
+            options: .curveEaseIn) {
+                label.transform = .init(translationX: offset.x, y: offset.y)
+                label.alpha = 0
+            }
+        
+        // Fade in and translate temp label
+        UIView.animate(
+            withDuration: 0.25,
+            delay: 0.25,
+            options: .curveEaseIn) {
+                tempLabel.transform = .identity
+                tempLabel.alpha = 1
+            } completion: { _ in
+                label.transform = .identity
+                label.text = tempLabel.text
+                label.alpha = 1
+                tempLabel.removeFromSuperview()
+            }
     }
     
     func cubeTransition(label: UILabel, text: String) {
@@ -125,8 +159,7 @@ private extension ViewController {
     
     func changeFlight(to flight: Flight, animated: Bool = false) {
         // populate the UI with the next flight's data
-        departureLabel.text = flight.origin
-        arriveLabel.text = flight.destination
+
         flightsNumberLabel.text = flight.number
         gateNumberLabel.text = flight.gateNumber
         statusLabel.text = flight.status
@@ -135,8 +168,13 @@ private extension ViewController {
         if animated {
             // TODO: Call your animation
             fade(to: UIImage(named: flight.weatherImageName)!, showEffects: flight.showWeatherEffects)
+            
+            move(label: departureLabel, text: flight.origin, offset: .init(x: -40, y: 0))
+            move(label: arriveLabel, text: flight.destination, offset: .init(x: arriveLabel.bounds.size.width + 40, y: 0))
         } else {
             backgroundView.image = UIImage(named: flight.weatherImageName)
+            departureLabel.text = flight.origin
+            arriveLabel.text = flight.destination
         }
         
         // schedule next flight
