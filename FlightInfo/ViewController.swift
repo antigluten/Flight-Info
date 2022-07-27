@@ -175,6 +175,43 @@ private extension ViewController {
     
     func depart() {
         //TODO: Animate the plane taking off and landing
+        
+        // Create new keyframe animation
+        let originalCenter = plane.center
+        UIView.animateKeyframes(withDuration: 1.5, delay: 0) {
+            // Move plane up & right
+            UIView.addKeyframe(withRelativeStartTime: 0.25, relativeDuration: 0.25) {
+                self.plane.center.x += 80
+                self.plane.center.y -= 10
+            }
+            
+            // Rotate plane
+            UIView.addKeyframe(withRelativeStartTime: 0.1, relativeDuration: 0.4) {
+                self.plane.transform = .init(rotationAngle: -.pi / 8)
+            }
+            
+            // Move plane up & right off screen, while fading out
+            UIView.addKeyframe(withRelativeStartTime: 0.25, relativeDuration: 0.25) {
+                self.plane.center.x += 100
+                self.plane.center.y -= 50
+                self.plane.alpha = 0
+            }
+            
+            // Move plane just off left side, reset transform and height
+            UIView.addKeyframe(withRelativeStartTime: 0.51, relativeDuration: 0.01) {
+                self.plane.center = .init(x: 0, y: originalCenter.y)
+                self.plane.transform = .identity
+            }
+            
+            // Move plane back to original position & fade in
+            UIView.addKeyframe(withRelativeStartTime: 0.55, relativeDuration: 0.45) {
+                self.plane.center = originalCenter
+                self.plane.alpha = 1
+            }
+        }
+        
+        
+        
     }
     
     func changeSummary(to summaryText: String) {
@@ -195,6 +232,7 @@ private extension ViewController {
             move(label: departureLabel, text: flight.origin, offset: .init(x: -40, y: 0))
             move(label: arriveLabel, text: flight.destination, offset: .init(x: arriveLabel.bounds.size.width + 40, y: 0))
             cubeTransition(label: statusLabel, text: flight.status)
+            depart()
         } else {
             backgroundView.image = UIImage(named: flight.weatherImageName)
             departureLabel.text = flight.origin
