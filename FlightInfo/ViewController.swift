@@ -209,22 +209,31 @@ private extension ViewController {
                 self.plane.alpha = 1
             }
         }
-        
-        
-        
     }
     
     func changeSummary(to summaryText: String) {
         //TODO: Animate the summary text
+        
+        UIView.animateKeyframes(withDuration: 1, delay: 0) {
+            UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 0.45) {
+                self.summaryLabel.center.y -= 50
+            }
+            
+            UIView.addKeyframe(withRelativeStartTime: 0.5, relativeDuration: 0.45) {
+                self.summaryLabel.center.y += 50
+            }
+        }
+        
+        delay(seconds: 0.5) {
+            self.summaryLabel.text = summaryText
+        }
     }
     
     func changeFlight(to flight: Flight, animated: Bool = false) {
         // populate the UI with the next flight's data
         flightsNumberLabel.text = flight.number
         gateNumberLabel.text = flight.gateNumber
-        
-        summaryLabel.text = flight.summary
-        
+      
         if animated {
             // TODO: Call your animation
             fade(to: UIImage(named: flight.weatherImageName)!, showEffects: flight.showWeatherEffects)
@@ -233,11 +242,13 @@ private extension ViewController {
             move(label: arriveLabel, text: flight.destination, offset: .init(x: arriveLabel.bounds.size.width + 40, y: 0))
             cubeTransition(label: statusLabel, text: flight.status)
             depart()
+            changeSummary(to: flight.summary)
         } else {
             backgroundView.image = UIImage(named: flight.weatherImageName)
             departureLabel.text = flight.origin
             arriveLabel.text = flight.destination
             statusLabel.text = flight.status
+            summaryLabel.text = flight.summary
         }
         
         // schedule next flight
