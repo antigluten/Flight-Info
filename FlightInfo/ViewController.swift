@@ -147,6 +147,30 @@ private extension ViewController {
     
     func cubeTransition(label: UILabel, text: String) {
         //TODO: Create a faux rotating cube animation
+        
+        // Create & setup temp label
+        let tempLabel = duplicate(label)
+        tempLabel.text = text
+        let tempLabelOffset = label.frame.size.height / 2
+        let scale = CGAffineTransform(scaleX: 1, y: 0.1)
+        let translate = CGAffineTransform(translationX: 0, y: tempLabelOffset)
+        
+        tempLabel.transform = scale.concatenating(translate)
+        label.superview?.addSubview(tempLabel)
+        
+        UIView.animate(
+            withDuration: 0.5, delay: 0, options: .curveEaseOut) {
+                // Scale temp label down and translate up
+                tempLabel.transform = .identity
+                label.transform = scale.concatenating(translate.inverted())
+                // Scale real label down and translate up
+            } completion: { _ in
+                // Update real label's text and reset its transform
+                label.text = text
+                label.transform = .identity
+                // Remove temp label
+                tempLabel.removeFromSuperview()
+            }
     }
     
     func depart() {
@@ -159,10 +183,9 @@ private extension ViewController {
     
     func changeFlight(to flight: Flight, animated: Bool = false) {
         // populate the UI with the next flight's data
-
         flightsNumberLabel.text = flight.number
         gateNumberLabel.text = flight.gateNumber
-        statusLabel.text = flight.status
+        
         summaryLabel.text = flight.summary
         
         if animated {
@@ -171,10 +194,12 @@ private extension ViewController {
             
             move(label: departureLabel, text: flight.origin, offset: .init(x: -40, y: 0))
             move(label: arriveLabel, text: flight.destination, offset: .init(x: arriveLabel.bounds.size.width + 40, y: 0))
+            cubeTransition(label: statusLabel, text: flight.status)
         } else {
             backgroundView.image = UIImage(named: flight.weatherImageName)
             departureLabel.text = flight.origin
             arriveLabel.text = flight.destination
+            statusLabel.text = flight.status
         }
         
         // schedule next flight
